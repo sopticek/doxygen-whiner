@@ -7,29 +7,10 @@
 
 """Unit tests for the config module."""
 
-from tempfile import NamedTemporaryFile
-import os
 import unittest
 
 from doxygen_whiner import config
-
-
-class ConfigFile:
-    def __init__(self, content):
-        self.content = content
-
-    def __enter__(self):
-        with NamedTemporaryFile('wt', delete=False) as f:
-            self.name = f.name
-            try:
-                f.write(self.content)
-            except:
-                os.remove(self.name)
-                raise
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        os.remove(self.name)
+from .utils import TemporaryFile
 
 
 class TestConfigParse(unittest.TestCase):
@@ -47,7 +28,7 @@ class TestConfigParse(unittest.TestCase):
         [email]
             server = gmail.com
         '''
-        with ConfigFile(config_content) as cf:
+        with TemporaryFile(config_content) as cf:
             parsed_config = config.parse(cf.name)
             self.assertEqual(parsed_config.sections(), ['db', 'email'])
             self.assertEqual(parsed_config['db']['path'], 'db.sql')
@@ -70,8 +51,8 @@ class TestConfigParse(unittest.TestCase):
             path = /var/db/db.sql
             username = beruska
         '''
-        with ConfigFile(global_config_content) as global_cf:
-            with ConfigFile(local_config_content) as local_cf:
+        with TemporaryFile(global_config_content) as global_cf:
+            with TemporaryFile(local_config_content) as local_cf:
                 parsed_config = config.parse(global_cf.name, local_cf.name)
                 self.assertEqual(parsed_config.sections(), ['db', 'email'])
                 self.assertEqual(parsed_config['db']['path'], '/var/db/db.sql')

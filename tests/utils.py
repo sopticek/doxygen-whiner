@@ -7,7 +7,9 @@
 
 """Test utilities."""
 
+import os
 import sys
+from tempfile import NamedTemporaryFile
 
 class Redirect:
      def __init__(self, *, stdout=None, stderr=None):
@@ -25,3 +27,21 @@ class Redirect:
      def __exit__(self, exc_type, exc_value, traceback):
         sys.stdout = self._old_stdout
         sys.stderr = self._old_stderr
+
+
+class TemporaryFile:
+    def __init__(self, content):
+        self.content = content
+
+    def __enter__(self):
+        with NamedTemporaryFile('wt', delete=False) as f:
+            self.name = f.name
+            try:
+                f.write(self.content)
+            except:
+                os.remove(self.name)
+                raise
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.remove(self.name)

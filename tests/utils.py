@@ -29,6 +29,18 @@ class Redirect:
         sys.stderr = self._old_stderr
 
 
+class RedirectStdin:
+    def __init__(self, stdin):
+        self._stdin = stdin
+
+    def __enter__(self):
+        self._old_stdin = sys.stdin
+        sys.stdin = self._stdin
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        sys.stdin = self._old_stdin
+
+
 class TemporaryFile:
     def __init__(self, content):
         self.content = content

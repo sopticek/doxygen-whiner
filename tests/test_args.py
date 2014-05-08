@@ -16,6 +16,7 @@ from .utils import Redirect
 
 PROG_NAME = "doxygen-whiner"
 
+
 class TestArgsParse(unittest.TestCase):
     def test_if_no_arguments_are_given_file_is_set_to_none(self):
         parsed_args = args.parse([PROG_NAME])

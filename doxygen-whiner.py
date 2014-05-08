@@ -13,9 +13,11 @@ import sys
 from doxygen_whiner.args import parse as parse_args
 from doxygen_whiner.config import parse as parse_config
 
+
 def main(argc, argv):
     args = parse_args(argv)
     config = parse_config("config.ini", "config.local.ini")
+
 
 if __name__ == '__main__':
     sys.exit(main(len(sys.argv), sys.argv))

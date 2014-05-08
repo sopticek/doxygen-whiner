@@ -9,6 +9,7 @@
 
 import configparser
 
+
 def parse(*config_files):
     config = configparser.ConfigParser()
     config.read(config_files)

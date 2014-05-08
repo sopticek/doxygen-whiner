@@ -9,6 +9,7 @@
 
 import argparse
 
+
 def parse(argv):
     parser = argparse.ArgumentParser(prog=argv[0])
     parser.add_argument("file", help="load warnings from the given file",

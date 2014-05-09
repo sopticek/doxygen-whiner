@@ -26,3 +26,23 @@ class TestWarning(unittest.TestCase):
         self.assertRaises(TypeError, Warning, 52, 45, '')
         self.assertRaises(TypeError, Warning, '', 45.5, '')
         self.assertRaises(TypeError, Warning, '', 45, 45)
+
+    def test_two_warnings_with_same_data_are_equivalent(self):
+        warn1 = Warning('/src/check.h', 25, 'missing argument')
+        warn2 = Warning('/src/check.h', 25, 'missing argument')
+        self.assertEqual(warn1, warn2)
+
+    def test_two_warnings_with_different_file_are_not_equivalent(self):
+        warn1 = Warning('/src/check.h', 25, 'missing argument')
+        warn2 = Warning('/home/soptik/spam.c', 25, 'missing argument')
+        self.assertNotEqual(warn1, warn2)
+
+    def test_two_warnings_with_different_line_are_not_equivalent(self):
+        warn1 = Warning('/src/check.h', 25, 'missing argument')
+        warn2 = Warning('/src/check.h', 123, 'missing argument')
+        self.assertNotEqual(warn1, warn2)
+
+    def test_two_warnings_with_different_text_are_not_equivalent(self):
+        warn1 = Warning('/src/check.h', 25, 'missing argument')
+        warn2 = Warning('/src/check.h', 25, 'file not found')
+        self.assertNotEqual(warn1, warn2)

@@ -11,7 +11,8 @@ import unittest
 from io import StringIO
 
 from doxygen_whiner import io
-from .utils import TemporaryFile, RedirectStdin
+from .utils import TemporaryFile
+from .utils import RedirectStdin
 
 
 class TestIOReadFile(unittest.TestCase):

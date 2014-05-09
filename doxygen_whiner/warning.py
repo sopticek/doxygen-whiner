@@ -7,6 +7,8 @@
 
 """Representation and parsing of warnings."""
 
+import re
+
 from .utils import TypeCheckedAttribute
 
 
@@ -29,3 +31,16 @@ class Warning:
     def __repr__(self):
         return 'Warning({!r}, {}, {!r})'.format(self.file,
             self.line, self.text)
+
+
+def parse_warnings(text):
+    warnings = []
+    warning_re = re.compile(r'^(.*):(\d+): warning: (.*)$')
+
+    for line in text.split('\n'):
+        match = warning_re.match(line)
+        if match:
+            file, line, text = match.groups()
+            warnings.append(Warning(file, int(line), text))
+
+    return warnings

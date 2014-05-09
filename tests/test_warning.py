@@ -10,6 +10,7 @@
 import unittest
 
 from doxygen_whiner.warning import Warning
+from doxygen_whiner.warning import parse_warnings
 
 
 class TestWarning(unittest.TestCase):
@@ -51,3 +52,38 @@ class TestWarning(unittest.TestCase):
         warn = Warning('/src/check.h', 25, 'missing argument')
         self.assertEqual(repr(warn),
             "Warning('/src/check.h', 25, 'missing argument')")
+
+
+class TestParseWarnings(unittest.TestCase):
+    def scenario_warnings_are_parsed_correctly(self, text, exp_warnings):
+        self.assertEqual(parse_warnings(text), exp_warnings)
+
+    def create_warning_text_and_instance(self, path, line, text):
+        warn_text = path + ':' + str(line) + ': warning: '+ text + '\n'
+        warn = Warning(path, line, text)
+        return (warn_text, warn)
+
+    def test_parse_empty_text(self):
+        self.scenario_warnings_are_parsed_correctly('', [])
+
+    def test_parse_text_with_one_warning(self):
+        text, warn = self.create_warning_text_and_instance(
+            '/src/checking.h', 25, 'missing argument after \class')
+        exp_warnings = [warn]
+        self.scenario_warnings_are_parsed_correctly(text, exp_warnings)
+
+    def test_parse_text_with_two_warnings(self):
+        text1, warn1 = self.create_warning_text_and_instance(
+            '/src/checking.h', 25, 'missing argument after \class')
+        text2, warn2 = self.create_warning_text_and_instance(
+            '/src/checking.c', 34, 'include file error.h not found')
+        exp_warnings = [warn1, warn2]
+        self.scenario_warnings_are_parsed_correctly(text1 + text2, exp_warnings)
+
+    def test_lines_in_text_with_invalid_format_are_ignored(self):
+        text, warn = self.create_warning_text_and_instance(
+            '/src/checking.h', 25, 'missing argument after \class')
+        text = '#blabla\n' + text + '#blablaba\n'
+        exp_warnings = [warn]
+        self.scenario_warnings_are_parsed_correctly(text, exp_warnings)
+

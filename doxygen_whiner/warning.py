@@ -35,9 +35,27 @@ class Warning:
 
 def parse_warnings(text):
     warnings = []
-    warning_re = re.compile(r'^(.*):(\d+): warning: (.*)$')
 
+    # There may be warnings spanning over multiple lines, like:
+    #
+    # /src/checking.h:25: warning: the following parameters are not documented:
+    #   parameter 'n'
+    #   parameter 'm'
+    #
+    # To handle such warnings, we split the text into lines. Then, we merge
+    # lines starting with white space with the previous line. This simplifies
+    # the parsing of such warnings later.
+    lines = []
+    continued_line_re = re.compile(r'[\t ]+')
     for line in text.split('\n'):
+        match = continued_line_re.match(line)
+        if match:
+            lines[-1] += '\n' + line
+        else:
+            lines.append(line)
+
+    warning_re = re.compile(r'^(.*):(\d+): warning: (.*)$', re.DOTALL)
+    for line in lines:
         match = warning_re.match(line)
         if match:
             file, line, text = match.groups()

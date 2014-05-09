@@ -87,3 +87,11 @@ class TestParseWarnings(unittest.TestCase):
         exp_warnings = [warn]
         self.scenario_warnings_are_parsed_correctly(text, exp_warnings)
 
+    def test_parse_text_with_multiline_warning(self):
+        text, warn = self.create_warning_text_and_instance(
+            '/src/checking.h', 25, 'the following parameters are not documented:\n'
+            "\tparameter 'n'\n"
+            "\tparameter 'm'")
+        exp_warnings = [warn]
+        self.scenario_warnings_are_parsed_correctly(text, exp_warnings)
+

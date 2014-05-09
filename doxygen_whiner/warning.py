@@ -7,29 +7,13 @@
 
 """Representation and parsing of warnings."""
 
-
-class _TypeCheckedAttribute:
-    def __init__(self, name, type):
-        self.name = name
-        self.type = type
-
-    def __set__(self, instance, value):
-        if not isinstance(value, self.type):
-            raise TypeError('{!r} is not of type {}'.format(
-                value, self.type))
-        instance.__dict__[self.name] = value
-
-    def __get__(self, instance, cls):
-        if instance is None:
-            return self
-        else:
-            return instance.__dict__[self.name]
+from .utils import TypeCheckedAttribute
 
 
 class Warning:
-    file = _TypeCheckedAttribute('file', str)
-    line = _TypeCheckedAttribute('line', int)
-    text = _TypeCheckedAttribute('text', str)
+    file = TypeCheckedAttribute('file', str)
+    line = TypeCheckedAttribute('line', int)
+    text = TypeCheckedAttribute('text', str)
 
     def __init__(self, file, line, text):
         self.file = file

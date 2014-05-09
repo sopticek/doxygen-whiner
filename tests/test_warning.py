@@ -46,3 +46,8 @@ class TestWarning(unittest.TestCase):
         warn1 = Warning('/src/check.h', 25, 'missing argument')
         warn2 = Warning('/src/check.h', 25, 'file not found')
         self.assertNotEqual(warn1, warn2)
+
+    def test_repr(self):
+        warn = Warning('/src/check.h', 25, 'missing argument')
+        self.assertEqual(repr(warn),
+            "Warning('/src/check.h', 25, 'missing argument')")

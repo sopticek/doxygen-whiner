@@ -25,3 +25,7 @@ class Warning:
 
     def __ne__(self, other):
         return not self == other
+
+    def __repr__(self):
+        return 'Warning({!r}, {}, {!r})'.format(self.file,
+            self.line, self.text)

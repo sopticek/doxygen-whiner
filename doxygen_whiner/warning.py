@@ -34,7 +34,7 @@ class Warning:
 
 
 def parse_warnings(text):
-    warnings = []
+    text = text.strip()
 
     # There may be warnings spanning over multiple lines, like:
     #
@@ -54,6 +54,7 @@ def parse_warnings(text):
         else:
             lines.append(line)
 
+    warnings = []
     warning_re = re.compile(r'^(.*):(\d+): warning: (.*)$', re.DOTALL)
     for line in lines:
         match = warning_re.match(line)

@@ -95,3 +95,9 @@ class TestParseWarnings(unittest.TestCase):
         exp_warnings = [warn]
         self.scenario_warnings_are_parsed_correctly(text, exp_warnings)
 
+    def test_parse_text_which_starts_with_white_space(self):
+        text, warn = self.create_warning_text_and_instance(
+            '/src/checking.h', 25, 'missing argument after \class')
+        text = '  \n' + text
+        exp_warnings = [warn]
+        self.scenario_warnings_are_parsed_correctly(text, exp_warnings)

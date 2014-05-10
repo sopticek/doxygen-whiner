@@ -74,20 +74,26 @@ class TestCreateWarningWithCulprit(unittest.TestCase):
     @mock.patch('os.chdir')
     @mock.patch('subprocess.check_output')
     def test_create_from_valid_data(self, mock_check_output, mock_chdir):
-        mock_check_output.return_value = (
-            b'c1935c22bc9e78b5973cca27d4ad539f74cd1ee3 45 45 1\n'
-            b'author John Little\n'
-            b'author-mail <john.little@gmail.com>\n'
-            b'author-time 1398073301\n'
-            b'author-tz +0200\n'
-            b'committer John Little\n'
-            b'committer-mail <john.little@gmail.com>\n'
-            b'committer-time 1398073301\n'
-            b'committer-tz +0200\n'
-            b'summary Added description.\n'
-            b'boundary\n'
-            b'filename /mnt/data/error.c\n'
-            b'        \\class\n'
-        )
+        mock_check_output.return_value = '\n'.join([
+            'c1935c22bc9e78b5973cca27d4ad539f74cd1ee3 {0} {0} 1',
+            'author {1}',
+            'author-mail <{2}>',
+            'author-time 1398073301',
+            'author-tz +0200',
+            'committer {1}',
+            'committer-mail <{2}>',
+            'committer-time 1398073301',
+            'committer-tz +0200',
+            'summary Added description.',
+            'boundary',
+            'filename {3}',
+            '        \\class']
+        ).format(
+            self.warn.line,
+            self.warn_with_culprit.culprit.name,
+            self.warn_with_culprit.culprit.email,
+            self.warn.file
+        ).encode('utf-8')
+
         self.assertEqual(create_warning_with_culprit(self.warn),
             self.warn_with_culprit)

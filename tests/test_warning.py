@@ -53,6 +53,15 @@ class TestWarning(unittest.TestCase):
         self.assertEqual(repr(warn),
             "Warning('/src/check.h', 25, 'missing argument')")
 
+    def test_dir_returns_correct_directory(self):
+        warn = Warning('/src/check.h', 25, 'missing argument')
+        self.assertEqual(warn.dir, '/src')
+
+    def test_dir_cannot_be_set(self):
+        warn = Warning('/src/check.h', 25, 'missing argument')
+        with self.assertRaises(AttributeError):
+            warn.dir = '/usr/src'
+
 
 class TestParseWarnings(unittest.TestCase):
     def scenario_warnings_are_parsed_correctly(self, text, exp_warnings):

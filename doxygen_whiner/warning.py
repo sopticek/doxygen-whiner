@@ -8,6 +8,7 @@
 """Representation and parsing of warnings."""
 
 import re
+import os
 
 from .utils import TypeCheckedAttribute
 
@@ -31,6 +32,11 @@ class Warning:
     def __repr__(self):
         return 'Warning({!r}, {}, {!r})'.format(self.file,
             self.line, self.text)
+
+    @property
+    def dir(self):
+        '''Returns the directory in which the file is located.'''
+        return os.path.dirname(self.file)
 
 
 def parse_warnings(text):

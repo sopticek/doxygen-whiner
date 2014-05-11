@@ -131,20 +131,22 @@ class TestCreateWarningWithCulprit(unittest.TestCase):
             create_warning_with_culprit, self.warn)
 
     def test_file_does_not_exist(self, mock_check_output, mock_chdir):
-        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git')
-        self.assertRaises(GitError,
-            create_warning_with_culprit, self.warn)
+        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git', b'error')
+        with self.assertRaises(GitError) as e:
+            create_warning_with_culprit(self.warn)
+        self.assertEqual(str(e.exception), 'error')
 
     def test_line_in_file_does_not_exist(self, mock_check_output, mock_chdir):
-        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git')
-        self.assertRaises(GitError,
-            create_warning_with_culprit, self.warn)
+        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git', b'error')
+        with self.assertRaises(GitError) as e:
+            create_warning_with_culprit(self.warn)
+        self.assertEqual(str(e.exception), 'error')
 
     def test_upon_raising_exception_chdir_to_original_cwd_is_called(
             self, mock_check_output, mock_chdir):
-        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git')
+        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git', b'error')
         original_cwd = os.getcwd()
-        self.assertRaises(GitError,
-            create_warning_with_culprit, self.warn)
+        with self.assertRaises(GitError) as e:
+            create_warning_with_culprit(self.warn)
+        self.assertEqual(str(e.exception), 'error')
         self.assertEqual(mock_chdir.mock_calls[-1], mock.call(original_cwd))
-

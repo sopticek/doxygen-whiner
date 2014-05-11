@@ -10,7 +10,6 @@
 import re
 import os
 import subprocess
-from io import StringIO
 
 from .utils import TypeCheckedAttribute
 from .warning import Warning
@@ -62,11 +61,10 @@ def create_warning_with_culprit(warning):
 
     try:
         os.chdir(warning.dir)
-        stderr = StringIO()
         git_output = subprocess.check_output([
             'git', 'blame', warning.file,
             '-L', '{0},{0}'.format(warning.line),
-            '--porcelain'], stderr=stderr)
+            '--porcelain'], stderr=subprocess.STDOUT)
     except FileNotFoundError as e:
         # Either git is not installed or warning.file does not exist.
         raise GitError(str(e))
@@ -74,7 +72,7 @@ def create_warning_with_culprit(warning):
         # Error of the form:
         #
         # Command 'xxx' returned non-zero exit status N.
-        raise GitError(stderr.getvalue())
+        raise GitError(e.output.decode('utf-8'))
     finally:
         os.chdir(current_dir)
 

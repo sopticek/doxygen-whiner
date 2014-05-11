@@ -7,12 +7,15 @@
 
 """Unit tests for the git module."""
 
+import os
 import unittest
+import subprocess
 from unittest import mock
 
 from doxygen_whiner.git import Person
 from doxygen_whiner.git import WarningWithCulprit
 from doxygen_whiner.git import create_warning_with_culprit
+from doxygen_whiner.git import GitError
 from doxygen_whiner.warning import Warning
 
 
@@ -79,6 +82,8 @@ class TestWarningWithCulprit(unittest.TestCase):
             "WarningWithCulprit({}, {})".format(warn, culprit))
 
 
+@mock.patch('os.chdir')
+@mock.patch('subprocess.check_output')
 class TestCreateWarningWithCulprit(unittest.TestCase):
     def setUp(self):
         file = '/mnt/data/error.c'
@@ -90,8 +95,6 @@ class TestCreateWarningWithCulprit(unittest.TestCase):
         self.culprit = Person(name, email)
         self.warn_with_culprit = WarningWithCulprit(self.warn, self.culprit)
 
-    @mock.patch('os.chdir')
-    @mock.patch('subprocess.check_output')
     def test_create_from_valid_data(self, mock_check_output, mock_chdir):
         mock_check_output.return_value = '\n'.join([
             'c1935c22bc9e78b5973cca27d4ad539f74cd1ee3 {0} {0} 1',
@@ -116,3 +119,32 @@ class TestCreateWarningWithCulprit(unittest.TestCase):
 
         self.assertEqual(create_warning_with_culprit(self.warn),
             self.warn_with_culprit)
+
+    def test_file_dir_does_not_exist(self, mock_check_output, mock_chdir):
+        mock_chdir.side_effect = [FileNotFoundError, None]
+        self.assertRaises(GitError,
+            create_warning_with_culprit, self.warn)
+
+    def test_git_command_does_not_exist(self, mock_check_output, mock_chdir):
+        mock_check_output.side_effect = FileNotFoundError
+        self.assertRaises(GitError,
+            create_warning_with_culprit, self.warn)
+
+    def test_file_does_not_exist(self, mock_check_output, mock_chdir):
+        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git')
+        self.assertRaises(GitError,
+            create_warning_with_culprit, self.warn)
+
+    def test_line_in_file_does_not_exist(self, mock_check_output, mock_chdir):
+        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git')
+        self.assertRaises(GitError,
+            create_warning_with_culprit, self.warn)
+
+    def test_upon_raising_exception_chdir_to_original_cwd_is_called(
+            self, mock_check_output, mock_chdir):
+        mock_check_output.side_effect = subprocess.CalledProcessError(128, 'git')
+        original_cwd = os.getcwd()
+        self.assertRaises(GitError,
+            create_warning_with_culprit, self.warn)
+        self.assertEqual(mock_chdir.mock_calls[-1], mock.call(original_cwd))
+

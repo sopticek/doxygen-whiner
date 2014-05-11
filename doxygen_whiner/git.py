@@ -10,6 +10,7 @@
 import re
 import os
 import subprocess
+from io import StringIO
 
 from .utils import TypeCheckedAttribute
 from .warning import Warning
@@ -43,21 +44,45 @@ class WarningWithCulprit(Warning):
             super().__repr__(), self.culprit)
 
 
-def create_warning_with_culprit(warning):
-    current_dir = os.getcwd()
-    os.chdir(warning.dir)
+class GitError(Exception):
+    pass
 
-    git_output = subprocess.check_output([
-        'git', 'blame', warning.file,
-        '-L', '{0},{0}'.format(warning.line),
-        '--porcelain'])
+
+def create_warning_with_culprit(warning):
+    '''Creates WarningWithCulprit from the given warning.
+
+    It detects the culprit by running `git blame` on warning.file.
+
+    In the following situations, GitError is raised:
+    - warning.file does not exist
+    - git is not installed
+    - warning.line does not exist in warning.file
+    '''
+    current_dir = os.getcwd()
+
+    try:
+        os.chdir(warning.dir)
+        stderr = StringIO()
+        git_output = subprocess.check_output([
+            'git', 'blame', warning.file,
+            '-L', '{0},{0}'.format(warning.line),
+            '--porcelain'], stderr=stderr)
+    except FileNotFoundError as e:
+        # Either git is not installed or warning.file does not exist.
+        raise GitError(str(e))
+    except subprocess.CalledProcessError as e:
+        # Error of the form:
+        #
+        # Command 'xxx' returned non-zero exit status N.
+        raise GitError(stderr.getvalue())
+    finally:
+        os.chdir(current_dir)
+
     git_output = git_output.decode('utf-8')
 
     name_re = re.compile(r'^author (.*)$', re.MULTILINE)
     email_re = re.compile(r'^author-mail <(.*)>$', re.MULTILINE)
     name = name_re.search(git_output).group(1)
     email = email_re.search(git_output).group(1)
-
-    os.chdir(current_dir)
 
     return WarningWithCulprit(warning, Person(name, email))

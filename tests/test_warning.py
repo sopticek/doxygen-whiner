@@ -17,7 +17,7 @@ class TestWarning(unittest.TestCase):
     def test_warning_attributes_are_correctly_set_after_creation(self):
         file = '/mnt/data/error.c'
         line = 45
-        text = 'missing argument after \class'
+        text = r'missing argument after \class'
         w = Warning(file, line, text)
         self.assertEqual(w.file, file)
         self.assertEqual(w.line, line)
@@ -49,9 +49,10 @@ class TestWarning(unittest.TestCase):
         self.assertNotEqual(warn1, warn2)
 
     def test_repr(self):
-        warn = Warning('/src/check.h', 25, 'missing argument')
+        warn = Warning('/src/check.h', 25, r'missing argument after \class')
+        print(r"Warning('/src/check.h', 25, 'missing argument after \\class')")
         self.assertEqual(repr(warn),
-            "Warning('/src/check.h', 25, 'missing argument')")
+            r"Warning('/src/check.h', 25, 'missing argument after \\class')")
 
     def test_dir_returns_correct_directory(self):
         warn = Warning('/src/check.h', 25, 'missing argument')

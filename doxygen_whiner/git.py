@@ -23,6 +23,9 @@ class Person:
         self.name = name
         self.email = email
 
+    def __repr__(self):
+        return 'Person({!r}, {!r})'.format(self.name, self.email)
+
     def __eq__(self, other):
         return self.name == other.name and self.email == other.email
 
@@ -34,6 +37,10 @@ class WarningWithCulprit(Warning):
     def __init__(self, warning, culprit):
         self.__dict__.update(warning.__dict__)
         self.culprit = culprit
+
+    def __repr__(self):
+        return 'WarningWithCulprit({}, {!r})'.format(
+            super().__repr__(), self.culprit)
 
 
 def create_warning_with_culprit(warning):

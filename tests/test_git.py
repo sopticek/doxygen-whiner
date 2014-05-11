@@ -43,12 +43,19 @@ class TestPerson(unittest.TestCase):
         person2 = Person('John Little', 'john.huge@gmail.com')
         self.assertNotEqual(person1, person2)
 
+    def test_repr(self):
+        name = 'John Little'
+        email = 'john.little@gmail.com'
+        person = Person(name, email)
+        self.assertEqual(repr(person),
+            "Person('John Little', 'john.little@gmail.com')")
+
 
 class TestWarningWithCulprit(unittest.TestCase):
     def test_create_warning_and_access_its_data(self):
         file = '/mnt/data/error.c'
         line = 45
-        text = 'missing argument after \class'
+        text = r'missing argument after \class'
         warn = Warning(file, line, text)
         name = 'John Little'
         email = 'john.little@gmail.com'
@@ -59,12 +66,24 @@ class TestWarningWithCulprit(unittest.TestCase):
         self.assertEqual(warn_with_culprit.line, line)
         self.assertEqual(warn_with_culprit.text, text)
 
+    def test_repr(self):
+        file = '/mnt/data/error.c'
+        line = 45
+        text = r'missing argument after \class'
+        warn = Warning(file, line, text)
+        name = 'John Little'
+        email = 'john.little@gmail.com'
+        culprit = Person(name, email)
+        warn_with_culprit = WarningWithCulprit(warn, culprit)
+        self.assertEqual(repr(warn_with_culprit),
+            "WarningWithCulprit({}, {})".format(warn, culprit))
+
 
 class TestCreateWarningWithCulprit(unittest.TestCase):
     def setUp(self):
         file = '/mnt/data/error.c'
         line = 45
-        text = 'missing argument after \class'
+        text = r'missing argument after \class'
         self.warn = Warning(file, line, text)
         name = 'John Little'
         email = 'john.little@gmail.com'

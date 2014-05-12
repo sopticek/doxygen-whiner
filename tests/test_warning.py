@@ -100,6 +100,15 @@ class TestPerson(unittest.TestCase):
         self.assertEqual(repr(person),
             "Person('John Little', 'john.little@gmail.com')")
 
+    def test_lt_gt(self):
+        aa = Person('A', 'A@gmail.com')
+        ab = Person('A', 'B@gmail.com')
+        ba = Person('B', 'A@gmail.com')
+        self.assertLess(aa, ab)
+        self.assertLess(aa, ba)
+        self.assertGreaterEqual(ba, aa)
+        self.assertGreaterEqual(ab, aa)
+
 
 class TestWarningWithCulprit(unittest.TestCase):
     def test_create_warning_and_access_its_data(self):

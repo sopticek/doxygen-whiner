@@ -9,6 +9,7 @@
 
 import re
 import os
+from functools import total_ordering
 
 from .utils import TypeCheckedAttribute
 
@@ -39,6 +40,7 @@ class Warning:
         return os.path.dirname(self.file)
 
 
+@total_ordering
 class Person:
     name = TypeCheckedAttribute('name', str)
     email = TypeCheckedAttribute('email', str)
@@ -51,10 +53,10 @@ class Person:
         return 'Person({!r}, {!r})'.format(self.name, self.email)
 
     def __eq__(self, other):
-        return self.name == other.name and self.email == other.email
+        return (self.name, self.email) == (other.name, other.email)
 
-    def __ne__(self, other):
-        return not self == other
+    def __lt__(self, other):
+        return (self.name, self.email) < (other.name, other.email)
 
 
 class WarningWithCulprit(Warning):

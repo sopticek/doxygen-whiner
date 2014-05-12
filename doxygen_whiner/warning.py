@@ -39,6 +39,34 @@ class Warning:
         return os.path.dirname(self.file)
 
 
+class Person:
+    name = TypeCheckedAttribute('name', str)
+    email = TypeCheckedAttribute('email', str)
+
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+
+    def __repr__(self):
+        return 'Person({!r}, {!r})'.format(self.name, self.email)
+
+    def __eq__(self, other):
+        return self.name == other.name and self.email == other.email
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class WarningWithCulprit(Warning):
+    def __init__(self, warning, culprit):
+        self.__dict__.update(warning.__dict__)
+        self.culprit = culprit
+
+    def __repr__(self):
+        return 'WarningWithCulprit({}, {!r})'.format(
+            super().__repr__(), self.culprit)
+
+
 def parse_warnings(text):
     text = text.strip()
 

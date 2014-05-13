@@ -15,6 +15,7 @@ from doxygen_whiner.config import parse as parse_config
 from doxygen_whiner.io import read_file
 from doxygen_whiner.io import read_stdin
 from doxygen_whiner.warning import parse_warnings
+from doxygen_whiner.warning import group_by_culprit
 from doxygen_whiner.git import create_warning_with_culprit
 
 def main(argc, argv):
@@ -28,12 +29,17 @@ def main(argc, argv):
 
     warnings = parse_warnings(text)
     # TODO: remove
-    from pprint import pprint
-    pprint(warnings)
+    # from pprint import pprint
+    # pprint(warnings)
 
     warnings_with_culprit = map(create_warning_with_culprit, warnings)
     # TODO: remove
-    pprint(list(warnings_with_culprit))
+    # pprint(list(warnings_with_culprit))
+
+    for culprit, warnings in group_by_culprit(warnings_with_culprit):
+        print(culprit, ':')
+        for i,w in enumerate(warnings, 1):
+            print('\t{}: {}'.format(i, w))
 
 if __name__ == '__main__':
     sys.exit(main(len(sys.argv), sys.argv))

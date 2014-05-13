@@ -53,7 +53,6 @@ class TestWarning(unittest.TestCase):
 
     def test_repr(self):
         warn = Warning('/src/check.h', 25, r'missing argument after \class')
-        print(r"Warning('/src/check.h', 25, 'missing argument after \\class')")
         self.assertEqual(repr(warn),
             r"Warning('/src/check.h', 25, 'missing argument after \\class')")
 

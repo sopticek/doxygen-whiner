@@ -41,6 +41,12 @@ class Warning:
         '''Returns the directory in which the file is located.'''
         return os.path.dirname(self.file)
 
+    @property
+    def original_data(self):
+        '''Returns the data of the original warning.'''
+        return '{}:{}: warning: {}'.format(
+            self.file, self.line, self.text)
+
 
 @total_ordering
 class Person:

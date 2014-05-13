@@ -13,6 +13,7 @@ from doxygen_whiner.warning import Person
 from doxygen_whiner.warning import Warning
 from doxygen_whiner.warning import WarningWithCulprit
 from doxygen_whiner.warning import parse_warnings
+from doxygen_whiner.warning import group_by_culprit
 
 
 class TestWarning(unittest.TestCase):
@@ -188,3 +189,42 @@ class TestParseWarnings(unittest.TestCase):
         self.scenario_warnings_are_parsed_correctly(text, exp_warnings)
 
 
+class TestGroupByCulprit(unittest.TestCase):
+    def create_warning_and_culprit(self, culprit_name):
+        file = '/mnt/data/error.c'
+        line = 45
+        text = r'missing argument after \class'
+        warn = Warning(file, line, text)
+        email = 'generic@gmail.com'
+        culprit = Person(culprit_name, email)
+        warn_with_culprit = WarningWithCulprit(warn, culprit)
+        return (warn_with_culprit, culprit)
+
+    def test_without_warnings_generates_nothing(self):
+        gen = group_by_culprit([])
+        self.assertRaises(StopIteration, next, gen)
+
+    def test_with_one_warning_generates_one_result(self):
+        warn, culprit = self.create_warning_and_culprit('John Little')
+        gen = group_by_culprit([warn])
+        self.assertEqual(next(gen), (culprit, [warn]))
+        self.assertRaises(StopIteration, next, gen)
+
+    def test_two_persons_each_with_one_warning(self):
+        warn1, culprit1 = self.create_warning_and_culprit('John Little')
+        warn2, culprit2 = self.create_warning_and_culprit('Jane Book')
+        gen = group_by_culprit([warn1, warn2])
+        self.assertEqual(next(gen), (culprit2, [warn2]))
+        self.assertEqual(next(gen), (culprit1, [warn1]))
+        self.assertRaises(StopIteration, next, gen)
+
+    def test_two_persons_each_with_two_warnings(self):
+        warn1, culprit1 = self.create_warning_and_culprit('John Little')
+        warn2, _        = self.create_warning_and_culprit('John Little')
+        warn3, culprit2 = self.create_warning_and_culprit('Jane Book')
+        warn4, _        = self.create_warning_and_culprit('Jane Book')
+
+        gen = group_by_culprit([warn1, warn2, warn3, warn4])
+        self.assertEqual(next(gen), (culprit2, [warn3, warn4]))
+        self.assertEqual(next(gen), (culprit1, [warn1, warn2]))
+        self.assertRaises(StopIteration, next, gen)

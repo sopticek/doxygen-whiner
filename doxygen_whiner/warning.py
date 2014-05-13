@@ -9,6 +9,8 @@
 
 import re
 import os
+from itertools import groupby
+from operator import attrgetter
 from functools import total_ordering
 
 from .utils import TypeCheckedAttribute
@@ -99,3 +101,15 @@ def parse_warnings(text):
             warnings.append(Warning(file, int(line), text))
 
     return warnings
+
+
+def group_by_culprit(warnings_with_culprit):
+    '''Generates pairs of the form (culprit, warnings).
+
+    The results are generated in a sorted order by culprit.
+    '''
+    warnings_with_culprit = sorted(warnings_with_culprit,
+        key=attrgetter('culprit'))
+    yield from ((culprit, list(warnings))
+        for culprit, warnings in
+            groupby(warnings_with_culprit, key=attrgetter('culprit')))

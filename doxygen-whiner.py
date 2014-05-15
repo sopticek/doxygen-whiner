@@ -9,6 +9,9 @@
 warnings, and sends emails to users who have introduced the warning."""
 
 import sys
+from getpass import getpass
+from smtplib import SMTP
+from smtplib import SMTP_SSL
 
 from doxygen_whiner.args import parse as parse_args
 from doxygen_whiner.config import parse as parse_config
@@ -17,6 +20,7 @@ from doxygen_whiner.io import read_stdin
 from doxygen_whiner.warning import parse_warnings
 from doxygen_whiner.warning import group_by_culprit
 from doxygen_whiner.git import create_warning_with_culprit
+from doxygen_whiner.email import create_email
 
 def main(argc, argv):
     args = parse_args(argv)
@@ -28,18 +32,21 @@ def main(argc, argv):
         text = read_stdin()
 
     warnings = parse_warnings(text)
-    # TODO: remove
-    # from pprint import pprint
-    # pprint(warnings)
-
     warnings_with_culprit = map(create_warning_with_culprit, warnings)
-    # TODO: remove
-    # pprint(list(warnings_with_culprit))
 
-    for culprit, warnings in group_by_culprit(warnings_with_culprit):
-        print(culprit, ':')
-        for i,w in enumerate(warnings, 1):
-            print('\t{}: {}'.format(i, w))
+    server = config['email']['server'] or input('Email server: ')
+    port = config['email']['port'] or input('Email server port: ')
+    use_ssl = config['email'].getboolean('use_ssl')
+    username = config['email']['username'] or input('Email server username: ')
+    password = config['email']['password'] or getpass('Email server password: ')
+
+    SMTPServer = SMTP_SSL if use_ssl else SMTP
+    with SMTPServer(server, port) as smtp_server:
+        smtp_server.login(username, password)
+        for culprit, warnings in group_by_culprit(warnings_with_culprit):
+            email = create_email(culprit, warnings, 'daniela.duricekova@gmail.com', '!!!')
+            smtp_server.send_message(email)
+
 
 if __name__ == '__main__':
     sys.exit(main(len(sys.argv), sys.argv))

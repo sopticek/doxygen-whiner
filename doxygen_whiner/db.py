@@ -16,6 +16,8 @@ class Database:
         self._initialize_table()
 
     def _initialize_table(self):
+        # The new column is, in fact, of the Boolean type (sqlite3 does not
+        # support the Boolean type, so we use the Integer type).
         self.conn.execute('''
             CREATE TABLE IF NOT EXISTS warnings (
                 file TEXT,
@@ -23,7 +25,8 @@ class Database:
                 text TEXT,
                 text_to_cmp TEXT,
                 name TEXT,
-                email TEXT);
+                email TEXT,
+                new INTEGER DEFAULT 1);
         ''')
 
     def _get_text_to_cmp(self, text):
@@ -31,7 +34,8 @@ class Database:
 
     def insert_warning(self, warning):
         self.conn.execute('''
-            INSERT INTO warnings VALUES (?, ?, ?, ?, ?, ?);''',
+            INSERT INTO warnings (file, line, text, text_to_cmp, name, email)
+                VALUES (?, ?, ?, ?, ?, ?);''',
             (warning.file,
              warning.line,
              warning.text,
@@ -49,7 +53,8 @@ class Database:
             WHERE file = ?
                 AND text_to_cmp = ?
                 AND name = ?
-                AND email = ?;''',
+                AND email = ?
+                AND new = 1;''',
             (warning.file,
              self._get_text_to_cmp(warning.text),
              warning.culprit.name,
@@ -57,6 +62,9 @@ class Database:
             )
         )
         return cursor.fetchone() is not None
+
+    def make_all_warnings_old(self):
+        self.conn.execute('UPDATE warnings SET new = 0;')
 
     def reset(self):
         self.conn.execute('DELETE FROM warnings;')

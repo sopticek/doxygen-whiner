@@ -47,7 +47,7 @@ class TestResetDatabase(BaseForDatabaseOperationsTests):
         self.assertFalse(cursor.fetchone())
 
 
-class TestInsertWarningAndHasWarning(BaseForDatabaseOperationsTests):
+class TestOperationsWithWarnings(BaseForDatabaseOperationsTests):
     def setUp(self):
         super().setUp()
         self.warn_with_culprit = self.create_warning_with_culprit()
@@ -92,4 +92,9 @@ class TestInsertWarningAndHasWarning(BaseForDatabaseOperationsTests):
         self.warn_with_culprit.text = 'parameter dog43'
         self.database.insert_warning(self.warn_with_culprit)
         self.warn_with_culprit.text = 'parameter dog600'
+        self.assertFalse(self.database.has_warning(self.warn_with_culprit))
+
+    def test_old_warnings_are_not_considered_during_comparison(self):
+        self.database.insert_warning(self.warn_with_culprit)
+        self.database.make_all_warnings_old()
         self.assertFalse(self.database.has_warning(self.warn_with_culprit))

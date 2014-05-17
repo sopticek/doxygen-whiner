@@ -7,8 +7,9 @@
 
 """Unit tests for the db module."""
 
-import unittest
 import sqlite3
+import tempfile
+import unittest
 
 from doxygen_whiner.db import Database
 from doxygen_whiner.warning import Person
@@ -52,20 +53,21 @@ class TestResetDatabase(BaseForDatabaseOperationsTests):
         self.assertFalse(cursor.fetchone())
 
 
+def create_warning_with_culprit():
+    file = '/mnt/data/error.c'
+    line = 45
+    text = r'missing argument after \class'
+    name = 'John Little'
+    email = 'john.little@gmail.com'
+    culprit = Person(name, email)
+    warn = Warning(file, line, text)
+    return WarningWithCulprit(warn, culprit)
+
+
 class TestOperationsWithWarnings(BaseForDatabaseOperationsTests):
     def setUp(self):
         super().setUp()
-        self.warn_with_culprit = self.create_warning_with_culprit()
-
-    def create_warning_with_culprit(self):
-        file = '/mnt/data/error.c'
-        line = 45
-        text = r'missing argument after \class'
-        name = 'John Little'
-        email = 'john.little@gmail.com'
-        culprit = Person(name, email)
-        warn = Warning(file, line, text)
-        return WarningWithCulprit(warn, culprit)
+        self.warn_with_culprit = create_warning_with_culprit()
 
     def test_insert_warning_and_has_warning_work_correctly(self):
         self.database.insert_warning(self.warn_with_culprit)
@@ -103,3 +105,22 @@ class TestOperationsWithWarnings(BaseForDatabaseOperationsTests):
         self.database.insert_warning(self.warn_with_culprit)
         self.database.make_all_warnings_old()
         self.assertFalse(self.database.has_warning(self.warn_with_culprit))
+
+
+class TestDatabasePersistence(unittest.TestCase):
+    def setUp(self):
+        self.db_file = tempfile.NamedTemporaryFile()
+        self.conn = sqlite3.connect(self.db_file.name)
+
+    def tearDown(self):
+        self.conn.close()
+        self.db_file.close()
+
+    def test_data_are_kept_upon_closing_database_connection(self):
+        database = Database(self.conn)
+        warn_with_culprit = create_warning_with_culprit()
+        database.insert_warning(warn_with_culprit)
+        self.conn.close()
+        self.conn = sqlite3.connect(self.db_file.name)
+        database = Database(self.conn)
+        self.assertTrue(database.has_warning(warn_with_culprit))

@@ -28,6 +28,7 @@ class Database:
                 email TEXT,
                 new INTEGER DEFAULT 1);
         ''')
+        self.conn.commit()
 
     def _get_text_to_cmp(self, text):
         return re.sub(r'\b\d+\b', 'XXX', text)
@@ -44,6 +45,7 @@ class Database:
              warning.culprit.email
             )
         )
+        self.conn.commit()
 
     def has_warning(self, warning):
         # While comparing we do not take into consideration the line number and

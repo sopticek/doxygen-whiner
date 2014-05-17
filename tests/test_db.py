@@ -20,6 +20,9 @@ class TestCreateDatabase(unittest.TestCase):
     def setUp(self):
         self.conn = sqlite3.connect(':memory:')
 
+    def tearDown(self):
+        self.conn.close()
+
     def test_non_existing_database_is_initialized(self):
         database = Database(self.conn)
         self.assertTrue(self.conn.execute('SELECT * FROM warnings;'))
@@ -38,6 +41,8 @@ class BaseForDatabaseOperationsTests(unittest.TestCase):
         self.conn = sqlite3.connect(':memory:')
         self.database = Database(self.conn)
 
+    def tearDown(self):
+        self.conn.close()
 
 class TestResetDatabase(BaseForDatabaseOperationsTests):
     def test_reset_works_correctly(self):

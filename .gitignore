@@ -2,3 +2,4 @@ __pycache__
 config.local.ini
 coverage
 .coverage
+doxygen-whiner.db

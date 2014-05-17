@@ -50,15 +50,17 @@ class TestResetDatabase(BaseForDatabaseOperationsTests):
 class TestInsertWarningAndHasWarning(BaseForDatabaseOperationsTests):
     def setUp(self):
         super().setUp()
+        self.warn_with_culprit = self.create_warning_with_culprit()
 
+    def create_warning_with_culprit(self):
         file = '/mnt/data/error.c'
         line = 45
         text = r'missing argument after \class'
-        warn = Warning(file, line, text)
         name = 'John Little'
         email = 'john.little@gmail.com'
         culprit = Person(name, email)
-        self.warn_with_culprit = WarningWithCulprit(warn, culprit)
+        warn = Warning(file, line, text)
+        return WarningWithCulprit(warn, culprit)
 
     def test_insert_warning_and_has_warning_work_correctly(self):
         self.database.insert_warning(self.warn_with_culprit)
@@ -67,3 +69,27 @@ class TestInsertWarningAndHasWarning(BaseForDatabaseOperationsTests):
     def test_has_warning_returns_false_if_there_is_no_warning(self):
         self.assertFalse(self.database.has_warning(self.warn_with_culprit))
 
+    def scenario_warnings_are_compared_without_line_numbers(self,
+            line1, line2, text_with_line1, text_with_line2):
+        self.warn_with_culprit.line = line1
+        self.warn_with_culprit.text = text_with_line1
+        self.database.insert_warning(self.warn_with_culprit)
+        self.warn_with_culprit.line = line2
+        self.warn_with_culprit.text = text_with_line2
+        self.assertTrue(self.database.has_warning(self.warn_with_culprit))
+
+    def test_warnings_are_compared_without_line_numbers(self):
+        self.scenario_warnings_are_compared_without_line_numbers(
+            35, 875, 'on line', 'on line')
+        self.scenario_warnings_are_compared_without_line_numbers(
+            35, 35, 'on line 789', 'on line 987')
+        self.scenario_warnings_are_compared_without_line_numbers(
+            35, 35, 'on line:789', 'on line:987')
+        self.scenario_warnings_are_compared_without_line_numbers(
+            35, 35, 'on line:789 and', 'on line:987 and')
+
+    def test_numbers_in_identifiers_are_not_line_numbers(self):
+        self.warn_with_culprit.text = 'parameter dog43'
+        self.database.insert_warning(self.warn_with_culprit)
+        self.warn_with_culprit.text = 'parameter dog600'
+        self.assertFalse(self.database.has_warning(self.warn_with_culprit))

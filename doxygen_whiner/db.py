@@ -7,6 +7,9 @@
 
 """Module for working with database."""
 
+import re
+
+
 class Database:
     def __init__(self, conn):
         self.conn = conn
@@ -18,37 +21,42 @@ class Database:
                 file TEXT,
                 line INTEGER,
                 text TEXT,
+                text_to_cmp TEXT,
                 name TEXT,
                 email TEXT);
         ''')
 
-    def _convert_warning_to_tuple(self, warning):
-        return (
-            warning.file,
-            warning.line,
-            warning.text,
-            warning.culprit.name,
-            warning.culprit.email
-        )
+    def _get_text_to_cmp(self, text):
+        return re.sub(r'\b\d+\b', 'XXX', text)
 
     def insert_warning(self, warning):
         self.conn.execute('''
-            INSERT INTO warnings VALUES (?, ?, ?, ?, ?);''',
-            self._convert_warning_to_tuple(warning)
+            INSERT INTO warnings VALUES (?, ?, ?, ?, ?, ?);''',
+            (warning.file,
+             warning.line,
+             warning.text,
+             self._get_text_to_cmp(warning.text),
+             warning.culprit.name,
+             warning.culprit.email
+            )
         )
 
     def has_warning(self, warning):
+        # While comparing we do not take into consideration the line number and
+        # original text. Instead, we use text_to_cmp.
         cursor = self.conn.execute('''
             SELECT * FROM warnings
             WHERE file = ?
-                AND line = ?
-                AND text = ?
+                AND text_to_cmp = ?
                 AND name = ?
                 AND email = ?;''',
-            self._convert_warning_to_tuple(warning)
+            (warning.file,
+             self._get_text_to_cmp(warning.text),
+             warning.culprit.name,
+             warning.culprit.email
+            )
         )
         return cursor.fetchone() is not None
-
 
     def reset(self):
         self.conn.execute('DELETE FROM warnings;')

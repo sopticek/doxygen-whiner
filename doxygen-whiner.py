@@ -21,6 +21,8 @@ from doxygen_whiner.warning import parse_warnings
 from doxygen_whiner.warning import group_by_culprit
 from doxygen_whiner.git import create_warning_with_culprit
 from doxygen_whiner.email import create_email
+from doxygen_whiner.db import Database
+
 
 def main(argc, argv):
     args = parse_args(argv)
@@ -34,6 +36,12 @@ def main(argc, argv):
     warnings = parse_warnings(text)
     warnings_with_culprit = map(create_warning_with_culprit, warnings)
 
+    db_conn = sqlite3.connect(config['db']['path'])
+    db = Database(db_conn)
+    warnings_with_culprit = filter(lambda w: not db.has_warning(w),
+        warnings_with_culprit)
+    db.make_all_warnings_old()
+
     server = config['email']['server'] or input('Email server: ')
     port = config['email']['port'] or input('Email server port: ')
     use_ssl = config['email'].getboolean('use_ssl')
@@ -46,7 +54,10 @@ def main(argc, argv):
         for culprit, warnings in group_by_culprit(warnings_with_culprit):
             email = create_email(culprit, warnings, 'daniela.duricekova@gmail.com', '!!!')
             smtp_server.send_message(email)
+            for w in warnings:
+                db.insert_warning(w)
 
+    db_conn.close()
 
 if __name__ == '__main__':
     sys.exit(main(len(sys.argv), sys.argv))

@@ -8,6 +8,7 @@
 """Loads the output from the doxygen program, parses it to obtain a list of
 warnings, and sends emails to users who have introduced the warning."""
 
+import logging
 import sys
 import sqlite3
 from getpass import getpass
@@ -28,6 +29,15 @@ from doxygen_whiner.db import Database
 def main(argc, argv):
     args = parse_args(argv)
     config = parse_config("config.ini", "config.local.ini")
+
+    if config['logging'].getboolean('enabled'):
+        logging.basicConfig(
+            filename=config['logging']['log_file'],
+            level=logging.INFO,
+            format='%(asctime)s: %(levelname)s: %(message)s'
+        )
+    logging.info('{} started with arguments {}'.format(
+        argv[0], ' '.join(argv[1:])))
 
     if args.file:
         text = read_file(args.file)
@@ -61,8 +71,11 @@ def main(argc, argv):
                 email = create_email(culprit, warnings, from_addr, subject,
                     to_addr=to_addr, reply_to_addr=reply_to_addr)
                 smtp_server.send_message(email)
+                logging.info('email sent to {}'.format(email['To']))
                 for w in warnings:
                     db.insert_warning(w)
+
+    logging.info('{} ended successfully'.format(argv[0]))
 
 
 if __name__ == '__main__':

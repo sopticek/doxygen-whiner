@@ -26,9 +26,9 @@ Please, correct them (if you haven't already done so).
     email = MIMEText(body)
     email['Subject'] = subject
     email['From'] = from_addr
-    email['To'] = culprit.email if to_addr is None else to_addr
+    email['To'] = culprit.email if not to_addr else to_addr
 
-    if reply_to_addr is not None:
+    if reply_to_addr:
         email['Reply-To'] = reply_to_addr
 
     return email

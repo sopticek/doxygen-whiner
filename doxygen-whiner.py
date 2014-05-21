@@ -39,41 +39,45 @@ def main(argc, argv):
     logging.info('{} started with arguments {}'.format(
         argv[0], ' '.join(argv[1:])))
 
-    if args.file:
-        text = read_file(args.file)
-    else:
-        text = read_stdin()
+    try:
+        if args.file:
+            text = read_file(args.file)
+        else:
+            text = read_stdin()
 
-    warnings = parse_warnings(text)
-    warnings_with_culprit = map(create_warning_with_culprit, warnings)
+        warnings = parse_warnings(text)
+        warnings_with_culprit = map(create_warning_with_culprit, warnings)
 
-    with sqlite3.connect(config['db']['path']) as db_conn:
-        db = Database(db_conn)
-        warnings_with_culprit = filter(lambda w: not db.has_warning(w),
-            warnings_with_culprit)
-        db.make_all_warnings_old()
+        with sqlite3.connect(config['db']['path']) as db_conn:
+            db = Database(db_conn)
+            warnings_with_culprit = filter(lambda w: not db.has_warning(w),
+                warnings_with_culprit)
+            db.make_all_warnings_old()
 
-        server = config['email']['server'] or input('Email server: ')
-        port = config['email']['port'] or input('Email server port: ')
-        use_ssl = config['email'].getboolean('use_ssl')
-        username = config['email']['username'] or input('Email server username: ')
-        password = config['email']['password'] or getpass('Email server password: ')
+            server = config['email']['server'] or input('Email server: ')
+            port = config['email']['port'] or input('Email server port: ')
+            use_ssl = config['email'].getboolean('use_ssl')
+            username = config['email']['username'] or input('Email server username: ')
+            password = config['email']['password'] or getpass('Email server password: ')
 
-        from_addr = config['email']['from'] or input('From address: ')
-        subject = config['email']['subject']
-        to_addr = config['email']['to']
-        reply_to_addr = config['email']['reply_to']
+            from_addr = config['email']['from'] or input('From address: ')
+            subject = config['email']['subject']
+            to_addr = config['email']['to']
+            reply_to_addr = config['email']['reply_to']
 
-        SMTPServer = SMTP_SSL if use_ssl else SMTP
-        with SMTPServer(server, port) as smtp_server:
-            smtp_server.login(username, password)
-            for culprit, warnings in group_by_culprit(warnings_with_culprit):
-                email = create_email(culprit, warnings, from_addr, subject,
-                    to_addr=to_addr, reply_to_addr=reply_to_addr)
-                smtp_server.send_message(email)
-                logging.info('email sent to {}'.format(email['To']))
-                for w in warnings:
-                    db.insert_warning(w)
+            SMTPServer = SMTP_SSL if use_ssl else SMTP
+            with SMTPServer(server, port) as smtp_server:
+                smtp_server.login(username, password)
+                for culprit, warnings in group_by_culprit(warnings_with_culprit):
+                    email = create_email(culprit, warnings, from_addr, subject,
+                        to_addr=to_addr, reply_to_addr=reply_to_addr)
+                    smtp_server.send_message(email)
+                    logging.info('email sent to {}'.format(email['To']))
+                    for w in warnings:
+                        db.insert_warning(w)
+    except Exception as ex:
+        logging.error('{}: {}'.format(ex.__class__.__name__, str(ex)))
+        raise
 
     logging.info('{} ended successfully'.format(argv[0]))
     return 0

@@ -49,11 +49,14 @@ def main(argc, argv):
         username = config['email']['username'] or input('Email server username: ')
         password = config['email']['password'] or getpass('Email server password: ')
 
+        from_address = config['email']['from'] or input('From address: ')
+        subject = config['email']['subject']
+
         SMTPServer = SMTP_SSL if use_ssl else SMTP
         with SMTPServer(server, port) as smtp_server:
             smtp_server.login(username, password)
             for culprit, warnings in group_by_culprit(warnings_with_culprit):
-                email = create_email(culprit, warnings, 'daniela.duricekova@gmail.com', '!!!')
+                email = create_email(culprit, warnings, from_address, subject)
                 smtp_server.send_message(email)
                 for w in warnings:
                     db.insert_warning(w)

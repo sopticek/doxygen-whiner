@@ -37,28 +37,27 @@ def main(argc, argv):
     warnings = parse_warnings(text)
     warnings_with_culprit = map(create_warning_with_culprit, warnings)
 
-    db_conn = sqlite3.connect(config['db']['path'])
-    db = Database(db_conn)
-    warnings_with_culprit = filter(lambda w: not db.has_warning(w),
-        warnings_with_culprit)
-    db.make_all_warnings_old()
+    with sqlite3.connect(config['db']['path']) as db_conn:
+        db = Database(db_conn)
+        warnings_with_culprit = filter(lambda w: not db.has_warning(w),
+            warnings_with_culprit)
+        db.make_all_warnings_old()
 
-    server = config['email']['server'] or input('Email server: ')
-    port = config['email']['port'] or input('Email server port: ')
-    use_ssl = config['email'].getboolean('use_ssl')
-    username = config['email']['username'] or input('Email server username: ')
-    password = config['email']['password'] or getpass('Email server password: ')
+        server = config['email']['server'] or input('Email server: ')
+        port = config['email']['port'] or input('Email server port: ')
+        use_ssl = config['email'].getboolean('use_ssl')
+        username = config['email']['username'] or input('Email server username: ')
+        password = config['email']['password'] or getpass('Email server password: ')
 
-    SMTPServer = SMTP_SSL if use_ssl else SMTP
-    with SMTPServer(server, port) as smtp_server:
-        smtp_server.login(username, password)
-        for culprit, warnings in group_by_culprit(warnings_with_culprit):
-            email = create_email(culprit, warnings, 'daniela.duricekova@gmail.com', '!!!')
-            smtp_server.send_message(email)
-            for w in warnings:
-                db.insert_warning(w)
+        SMTPServer = SMTP_SSL if use_ssl else SMTP
+        with SMTPServer(server, port) as smtp_server:
+            smtp_server.login(username, password)
+            for culprit, warnings in group_by_culprit(warnings_with_culprit):
+                email = create_email(culprit, warnings, 'daniela.duricekova@gmail.com', '!!!')
+                smtp_server.send_message(email)
+                for w in warnings:
+                    db.insert_warning(w)
 
-    db_conn.close()
 
 if __name__ == '__main__':
     sys.exit(main(len(sys.argv), sys.argv))

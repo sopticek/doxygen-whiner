@@ -76,6 +76,7 @@ def main(argc, argv):
                     db.insert_warning(w)
 
     logging.info('{} ended successfully'.format(argv[0]))
+    return 0
 
 
 if __name__ == '__main__':

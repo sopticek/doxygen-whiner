@@ -39,6 +39,7 @@ class TestCreateEmail(unittest.TestCase):
         self.assertEqual(email['Subject'], self.subject)
         self.assertEqual(email['From'], self.from_addr)
         self.assertEqual(email['To'], self.culprit.email)
+        self.assertIsNone(email['Reply-To'])
 
         self.assertIn(self.warn1.file, email.get_payload())
         self.assertIn(str(self.warn1.line), email.get_payload())
@@ -48,3 +49,18 @@ class TestCreateEmail(unittest.TestCase):
         self.assertIn(str(self.warn2.line), email.get_payload())
         self.assertIn(self.warn2.text, email.get_payload())
 
+    def test_override_to_addr(self):
+        to_addr = 'email@email.co.uk'
+        email = create_email(self.culprit,
+            [self.warn_with_culprit1, self.warn_with_culprit2],
+            self.from_addr, self.subject, to_addr=to_addr)
+
+        self.assertEqual(email['To'], to_addr)
+
+    def test_set_reply_to_addr(self):
+        reply_to_addr = 'email@email.co.uk'
+        email = create_email(self.culprit,
+            [self.warn_with_culprit1, self.warn_with_culprit2],
+            self.from_addr, self.subject, reply_to_addr=reply_to_addr)
+
+        self.assertEqual(email['Reply-To'], reply_to_addr)

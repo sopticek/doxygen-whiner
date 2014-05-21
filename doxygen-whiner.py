@@ -51,12 +51,15 @@ def main(argc, argv):
 
         from_address = config['email']['from'] or input('From address: ')
         subject = config['email']['subject']
+        to_address = config['email']['to']
+        reply_to_address = config['email']['reply_to']
 
         SMTPServer = SMTP_SSL if use_ssl else SMTP
         with SMTPServer(server, port) as smtp_server:
             smtp_server.login(username, password)
             for culprit, warnings in group_by_culprit(warnings_with_culprit):
-                email = create_email(culprit, warnings, from_address, subject)
+                email = create_email(culprit, warnings, from_address, subject,
+                    to_addr=to_address, reply_to_addr=reply_to_address)
                 smtp_server.send_message(email)
                 for w in warnings:
                     db.insert_warning(w)

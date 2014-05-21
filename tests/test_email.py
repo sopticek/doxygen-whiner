@@ -16,31 +16,35 @@ from doxygen_whiner.warning import WarningWithCulprit
 
 
 class TestCreateEmail(unittest.TestCase):
-    def test_create_email_correctly_create_email(self):
+    def setUp(self):
         file = '/mnt/data/error.c'
         line = 45
         text = r'missing argument after \class'
-        warn1 = Warning(file, line, text)
+        self.warn1 = Warning(file, line, text)
         file = '/mnt/data/quick.c'
         line = 89
         text = r'missing parameter'
-        warn2 = Warning(file, line, text)
-        culprit = Person('John Little', 'john.little@gmail.com' )
-        warn_with_culprit1 = WarningWithCulprit(warn1, culprit)
-        warn_with_culprit2 = WarningWithCulprit(warn2, culprit)
-        from_addr = 'doxygen@gmail.com'
-        subject = 'Warnings'
-        email = create_email(culprit, [warn_with_culprit1, warn_with_culprit2],
-            from_addr, subject)
+        self.warn2 = Warning(file, line, text)
+        self.culprit = Person('John Little', 'john.little@gmail.com' )
+        self.warn_with_culprit1 = WarningWithCulprit(self.warn1, self.culprit)
+        self.warn_with_culprit2 = WarningWithCulprit(self.warn2, self.culprit)
+        self.from_addr = 'doxygen@gmail.com'
+        self.subject = 'Warnings'
 
-        self.assertEqual(email['Subject'], subject)
-        self.assertEqual(email['From'], from_addr)
-        self.assertEqual(email['To'], culprit.email)
+    def test_create_email_correctly_create_email(self):
+        email = create_email(self.culprit,
+            [self.warn_with_culprit1, self.warn_with_culprit2],
+            self.from_addr, self.subject)
 
-        self.assertIn(warn1.file, email.get_payload())
-        self.assertIn(str(warn1.line), email.get_payload())
-        self.assertIn(warn1.text, email.get_payload())
+        self.assertEqual(email['Subject'], self.subject)
+        self.assertEqual(email['From'], self.from_addr)
+        self.assertEqual(email['To'], self.culprit.email)
 
-        self.assertIn(warn2.file, email.get_payload())
-        self.assertIn(str(warn2.line), email.get_payload())
-        self.assertIn(warn2.text, email.get_payload())
+        self.assertIn(self.warn1.file, email.get_payload())
+        self.assertIn(str(self.warn1.line), email.get_payload())
+        self.assertIn(self.warn1.text, email.get_payload())
+
+        self.assertIn(self.warn2.file, email.get_payload())
+        self.assertIn(str(self.warn2.line), email.get_payload())
+        self.assertIn(self.warn2.text, email.get_payload())
+

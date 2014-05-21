@@ -3,3 +3,4 @@ config.local.ini
 coverage
 .coverage
 doxygen-whiner.db
+doxygen-whiner.log

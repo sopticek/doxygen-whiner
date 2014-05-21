@@ -9,6 +9,7 @@
 warnings, and sends emails to users who have introduced the warning."""
 
 import sys
+import sqlite3
 from getpass import getpass
 from smtplib import SMTP
 from smtplib import SMTP_SSL

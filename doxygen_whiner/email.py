@@ -20,7 +20,7 @@ you were identified as the author of the code lines on which doxygen reported th
 
 Please, correct them (if you haven't already done so).
 
-    Your doxygen-whiner
+    Your Doxygen Whiner
 '''.format(culprit.name, '\n'.join(w.original_data for w in warnings))
 
     email = MIMEText(body)

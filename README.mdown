@@ -1,6 +1,6 @@
 # Doxygen Whiner #
 
-Parses the output from [doxygen](http://www.stack.nl/~dimitri/doxygen/) containing a list of warnings, finds out who is responsible for each warning (by using `git blame`), and sends an email to the responsible persons.
+Parses the output from [doxygen](http://www.stack.nl/~dimitri/doxygen/) containing a list of warnings, finds out who is responsible for each warning (by using `git blame`), and sends emails to the responsible persons.
 
 ## Usage ##
 

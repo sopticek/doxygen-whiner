@@ -25,7 +25,7 @@ def create_warning_with_culprit(warning):
     It detects the culprit by running `git blame` on warning.file.
 
     In the following situations, GitError is raised:
-    - warning.file does not exist
+    - warning.file_name does not exist in warning.dir
     - git is not installed
     - warning.line does not exist in warning.file
     '''
@@ -34,7 +34,7 @@ def create_warning_with_culprit(warning):
     try:
         os.chdir(warning.dir)
         git_output = subprocess.check_output([
-            'git', 'blame', warning.file,
+            'git', 'blame', warning.file_name,
             '-L', '{0},{0}'.format(warning.line),
             '--porcelain'], stderr=subprocess.STDOUT)
     except FileNotFoundError as e:

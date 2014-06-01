@@ -50,8 +50,10 @@ def main(argc, argv):
 
         with sqlite3.connect(config['db']['path']) as db_conn:
             db = Database(db_conn)
-            warnings_with_culprit = filter(lambda w: not db.has_warning(w),
-                warnings_with_culprit)
+            # Do not use filter() because we need the filtered warnings right
+            # away, before db.make_all_warnings_old() is called.
+            warnings_with_culprit = [w for w in warnings_with_culprit
+                                     if not db.has_warning(w)]
             db.make_all_warnings_old()
 
             server = config['email']['server'] or input('Email server: ')

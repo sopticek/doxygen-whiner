@@ -42,6 +42,11 @@ class Warning:
         return os.path.dirname(self.file)
 
     @property
+    def file_name(self):
+        '''Returns the name of the file, without the directory path.'''
+        return os.path.basename(self.file)
+
+    @property
     def original_data(self):
         '''Returns the data of the original warning.'''
         return '{}:{}: warning: {}'.format(

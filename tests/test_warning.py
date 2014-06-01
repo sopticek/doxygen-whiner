@@ -65,6 +65,10 @@ class TestWarning(unittest.TestCase):
         with self.assertRaises(AttributeError):
             warn.dir = '/usr/src'
 
+    def test_file_name_correctly_returns_file_name(self):
+        warn = Warning('/src/check.h', 25, r'missing argument after \class')
+        self.assertEqual(warn.file_name, 'check.h')
+
     def test_original_data_correctly_formats_warning(self):
         warn = Warning('/src/check.h', 25, r'missing argument after \class')
         self.assertEqual(warn.original_data,

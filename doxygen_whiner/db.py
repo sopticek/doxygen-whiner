@@ -8,6 +8,7 @@
 """Module for working with database."""
 
 import re
+import time
 
 
 class Database:
@@ -26,6 +27,7 @@ class Database:
                 text_to_cmp TEXT,
                 name TEXT,
                 email TEXT,
+                date INT,
                 new INTEGER DEFAULT 1);
         ''')
         self.conn.commit()
@@ -35,14 +37,15 @@ class Database:
 
     def insert_warning(self, warning):
         self.conn.execute('''
-            INSERT INTO warnings (file, line, text, text_to_cmp, name, email)
-                VALUES (?, ?, ?, ?, ?, ?);''',
+            INSERT INTO warnings (file, line, text, text_to_cmp, name, email, date)
+                VALUES (?, ?, ?, ?, ?, ?, ?);''',
             (warning.file,
              warning.line,
              warning.text,
              self._get_text_to_cmp(warning.text),
              warning.culprit.name,
-             warning.culprit.email
+             warning.culprit.email,
+             int(time.time())
             )
         )
         self.conn.commit()

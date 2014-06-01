@@ -10,6 +10,7 @@
 import sqlite3
 import tempfile
 import unittest
+from unittest import mock
 
 from doxygen_whiner.db import Database
 from doxygen_whiner.warning import Person
@@ -72,6 +73,12 @@ class TestOperationsWithWarnings(BaseForDatabaseOperationsTests):
     def test_insert_warning_and_has_warning_work_correctly(self):
         self.database.insert_warning(self.warn_with_culprit)
         self.assertTrue(self.database.has_warning(self.warn_with_culprit))
+
+    @mock.patch('time.time')
+    def test_date_is_correctly_set_when_inserting_new_warning(self, mock_time):
+        mock_time.return_value = 0
+        self.database.insert_warning(self.warn_with_culprit)
+        mock_time.assert_called_once_with()
 
     def test_has_warning_returns_false_if_there_is_no_warning(self):
         self.assertFalse(self.database.has_warning(self.warn_with_culprit))

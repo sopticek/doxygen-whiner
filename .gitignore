@@ -4,3 +4,4 @@ coverage
 .coverage
 doxygen-whiner.db
 doxygen-whiner.log
+test.log

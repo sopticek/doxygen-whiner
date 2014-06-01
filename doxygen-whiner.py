@@ -46,13 +46,13 @@ def main(argc, argv):
             text = read_stdin()
 
         warnings = parse_warnings(text)
-        warnings_with_culprit = map(create_warning_with_culprit, warnings)
+        all_warnings_with_culprit = list(map(create_warning_with_culprit, warnings))
 
         with sqlite3.connect(config['db']['path']) as db_conn:
             db = Database(db_conn)
             # Do not use filter() because we need the filtered warnings right
             # away, before db.make_all_warnings_old() is called.
-            warnings_with_culprit = [w for w in warnings_with_culprit
+            warnings_with_culprit = [w for w in all_warnings_with_culprit
                                      if not db.has_warning(w)]
             db.make_all_warnings_old()
 
@@ -75,8 +75,10 @@ def main(argc, argv):
                         to_addr=to_addr, reply_to_addr=reply_to_addr)
                     smtp_server.send_message(email)
                     logging.info('email sent to {}'.format(email['To']))
-                    for w in warnings:
-                        db.insert_warning(w)
+
+            for w in all_warnings_with_culprit:
+                db.insert_warning(w)
+
     except Exception as ex:
         logging.error('{}: {}'.format(ex.__class__.__name__, str(ex)))
         raise

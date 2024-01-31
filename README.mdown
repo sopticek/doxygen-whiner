@@ -31,7 +31,7 @@ If you want to generate code coverage, run `make test-coverage` and open `covera
 
 ## Copyright and License ##
 
-Copyright 2014 Daniela Duricekova <daniela.duricekova@gmail.com>
+Copyright 2014 Daniela Ďuričeková <daniela.duricekova@protonmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
